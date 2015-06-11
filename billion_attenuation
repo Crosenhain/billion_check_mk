@@ -1,0 +1,42 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+
+billion_attenuation_default_levels = (40, 39)
+
+
+def inventory_billion_attenuation(info):
+    return [(line[0], "billion_attenuation_default_levels") for line in info]
+
+def check_billion_attenuation(item, params, info):
+    for line in info:
+        if line[0] == item:
+            if line[0] == "1":
+                atmdesc = "vtuc"
+            elif line[0] == "2":
+                atmdesc = "vtur"
+            else:
+                atmdesc = line[0]
+            attenuation = int(line[1])*0.1
+            crit, warn = params
+            infotext = "%s is %sdBm (warn: %s, crit: %s)" % \
+                            ( atmdesc, attenuation, warn, crit)
+            perfdata = [ ( "attenuation", attenuation, warn, crit, 0, 52) ]
+            if attenuation >= crit:
+                return (2, "Attenuation for " + infotext, perfdata )
+            elif attenuation >= warn:
+                return (1, "Attenuation for " + infotext, perfdata )
+            else:
+                return (0, "Attenuation for " + infotext, perfdata )
+
+    return (3, "sensor not found in SNMP data")
+
+
+check_info["billion_attenuation"] = {
+    'check_function':          check_billion_attenuation,
+    'inventory_function':      inventory_billion_attenuation,
+    'service_description':     'Billion Attenuation %s',
+    'has_perfdata':            True,
+    'snmp_info':               ('.1.3.6.1.2.1.10.97.1.1.2.1', ['1', '6']),
+    'group':                   'billion',
+}
+

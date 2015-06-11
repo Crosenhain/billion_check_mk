@@ -1,0 +1,42 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+
+billion_currlinerate_default_levels = (500, 1000)
+
+
+def inventory_billion_currlinerate(info):
+    return [(line[0], "billion_currlinerate_default_levels") for line in info]
+
+def check_billion_currlinerate(item, params, info):
+    for line in info:
+        if line[0] == item:
+            if line[0] == "1":
+                atmdesc = "vtuc"
+            elif line[0] == "2":
+                atmdesc = "vtur"
+            else:
+                atmdesc = line[0]
+            currlinerate = int(line[1])
+            crit, warn = params
+            infotext = "%s is %skbit (warn: %s, crit: %s)" % \
+                            ( atmdesc, currlinerate, warn, crit)
+            perfdata = [ ( "currlinerate", currlinerate, warn, crit, 0, 52) ]
+            if currlinerate <= crit:
+                return (2, "currlinerate for " + infotext, perfdata )
+            elif currlinerate <= warn:
+                return (1, "currlinerate for " + infotext, perfdata )
+            else:
+                return (0, "currlinerate for " + infotext, perfdata )
+
+    return (3, "sensor not found in SNMP data")
+
+
+check_info["billion_currlinerate"] = {
+    'check_function':          check_billion_currlinerate,
+    'inventory_function':      inventory_billion_currlinerate,
+    'service_description':     'Billion current line rate %s',
+    'has_perfdata':            True,
+    'snmp_info':               ('.1.3.6.1.2.1.10.97.1.1.2.1', ['1', '10']),
+    'group':                   'billion',
+}
+

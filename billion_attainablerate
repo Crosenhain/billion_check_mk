@@ -1,0 +1,42 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+
+billion_attainablerate_default_levels = (500, 1000)
+
+
+def inventory_billion_attainablerate(info):
+    return [(line[0], "billion_attainablerate_default_levels") for line in info]
+
+def check_billion_attainablerate(item, params, info):
+    for line in info:
+        if line[0] == item:
+            if line[0] == "1":
+                atmdesc = "vtuc"
+            elif line[0] == "2":
+                atmdesc = "vtur"
+            else:
+                atmdesc = line[0]
+            attainablerate = int(line[1])
+            crit, warn = params
+            infotext = "%s is %skbit (warn: %s, crit: %s)" % \
+                            ( atmdesc, attainablerate, warn, crit)
+            perfdata = [ ( "attainablerate", attainablerate, warn, crit, 0, 52) ]
+            if attainablerate <= crit:
+                return (2, "attainablerate for " + infotext, perfdata )
+            elif attainablerate <= warn:
+                return (1, "attainablerate for " + infotext, perfdata )
+            else:
+                return (0, "attainablerate for " + infotext, perfdata )
+
+    return (3, "sensor not found in SNMP data")
+
+
+check_info["billion_attainablerate"] = {
+    'check_function':          check_billion_attainablerate,
+    'inventory_function':      inventory_billion_attainablerate,
+    'service_description':     'Billion attainable rate %s',
+    'has_perfdata':            True,
+    'snmp_info':               ('.1.3.6.1.2.1.10.97.1.1.2.1', ['1', '9']),
+    'group':                   'billion',
+}
+

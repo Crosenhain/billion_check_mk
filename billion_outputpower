@@ -1,0 +1,42 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+
+billion_outputpower_default_levels = (5, 10)
+
+
+def inventory_billion_outputpower(info):
+    return [(line[0], "billion_outputpower_default_levels") for line in info]
+
+def check_billion_outputpower(item, params, info):
+    for line in info:
+        if line[0] == item:
+            if line[0] == "1":
+                atmdesc = "vtuc"
+            elif line[0] == "2":
+                atmdesc = "vtur"
+            else:
+                atmdesc = line[0]
+            outputpower = int(line[1])*0.1
+            crit, warn = params
+            infotext = "%s is %sdBm (warn: %s, crit: %s)" % \
+                            ( atmdesc, outputpower, warn, crit)
+            perfdata = [ ( "outputpower", outputpower, warn, crit, 0, 52) ]
+            if outputpower <= crit:
+                return (2, "outputpower for " + infotext, perfdata )
+            elif outputpower <= warn:
+                return (1, "outputpower for " + infotext, perfdata )
+            else:
+                return (0, "outputpower for " + infotext, perfdata )
+
+    return (3, "sensor not found in SNMP data")
+
+
+check_info["billion_outputpower"] = {
+    'check_function':          check_billion_outputpower,
+    'inventory_function':      inventory_billion_outputpower,
+    'service_description':     'Billion output power %s',
+    'has_perfdata':            True,
+    'snmp_info':               ('.1.3.6.1.2.1.10.97.1.1.2.1', ['1', '8']),
+    'group':                   'billion',
+}
+

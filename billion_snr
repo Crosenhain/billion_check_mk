@@ -1,0 +1,42 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+
+billion_snr_default_levels = (1, 2)
+
+
+def inventory_billion_snr(info):
+    return [(line[0], "billion_snr_default_levels") for line in info]
+
+def check_billion_snr(item, params, info):
+    for line in info:
+        if line[0] == item:
+            if line[0] == "1":
+                atmdesc = "vtuc"
+            elif line[0] == "2":
+                atmdesc = "vtur"
+            else:
+                atmdesc = line[0]
+            snr = int(line[1])*0.1
+            crit, warn = params
+            infotext = "%s is %sdBm (warn: %s, crit: %s)" % \
+                            ( atmdesc, snr, warn, crit)
+            perfdata = [ ( "snr", snr, warn, crit, 0, 52) ]
+            if snr <= crit:
+                return (2, "snr for " + infotext, perfdata )
+            elif snr <= warn:
+                return (1, "snr for " + infotext, perfdata )
+            else:
+                return (0, "snr for " + infotext, perfdata )
+
+    return (3, "sensor not found in SNMP data")
+
+
+check_info["billion_snr"] = {
+    'check_function':          check_billion_snr,
+    'inventory_function':      inventory_billion_snr,
+    'service_description':     'Billion snr %s',
+    'has_perfdata':            True,
+    'snmp_info':               ('.1.3.6.1.2.1.10.97.1.1.2.1', ['1', '5']),
+    'group':                   'billion',
+}
+
